@@ -1,37 +1,48 @@
 import os
-import shutil
 import random
+import shutil
+import numpy as np
+import torch
+from detectron2.config import get_cfg
 from detectron2.data import DatasetCatalog, MetadataCatalog
 from detectron2.data.datasets import register_coco_instances
 from detectron2.engine import DefaultTrainer
-from detectron2.config import get_cfg
-from detectron2 import model_zoo
+from detectron2.utils.visualizer import Visualizer
+from detectron2.utils.logger import setup_logger
 
-# Register the COCO-format dataset
-data_dir = "path/to/train/data"
-register_coco_instances("ribbon_train", {}, os.path.join(data_dir, "annotations.json"), data_dir)
+setup_logger()
 
-# Create the configuration
+# Register the dataset
+register_coco_instances("ribbon_train", {}, "path/to/train/data/train.json", "path/to/train/data/train")
+register_coco_instances("ribbon_val", {}, "path/to/val/data/val.json", "path/to/val/data/val")
+
+# Load the pre-trained model
 cfg = get_cfg()
-cfg.merge_from_file(model_zoo.get_config_file("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"))
+cfg.merge_from_file("path/to/detectron2/configs/COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
+
+# Dataset settings
 cfg.DATASETS.TRAIN = ("ribbon_train",)
+cfg.DATASETS.VAL = ("ribbon_val",)
+cfg.DATASETS.TEST = ()
+
+# Dataloader settings
 cfg.DATALOADER.NUM_WORKERS = 2
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
+
+# Trainer settings
 cfg.SOLVER.IMS_PER_BATCH = 2
 cfg.SOLVER.BASE_LR = 0.00025
-cfg.SOLVER.MAX_ITER = 3000
+cfg.SOLVER.MAX_ITER = 5000
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128
-cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1  # Assuming only 1 class (ribbon)
-
+cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1  # Only one class: ribbon
 cfg.OUTPUT_DIR = "path/to/save/model"
-os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 
 # Train the model
+os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 trainer = DefaultTrainer(cfg)
 trainer.resume_or_load(resume=False)
 trainer.train()
 
-# Rename the trained model to Ribbon.h5
+# Save the trained model as Ribbon.pth
 trained_model_path = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
-target_model_path = os.path.join(cfg.OUTPUT_DIR, "Ribbon.h5")
+target_model_path = os.path.join(cfg.OUTPUT_DIR, "Ribbon.pth")
 shutil.move(trained_model_path, target_model_path)
