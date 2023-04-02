@@ -14,12 +14,12 @@ from detectron2.utils.logger import setup_logger
 setup_logger()
 
 # Register the dataset
-register_coco_instances("ribbon_train", {}, "path/to/train/data/train.json", "path/to/train/data/train")
-register_coco_instances("ribbon_val", {}, "path/to/val/data/val.json", "path/to/val/data/val")
+register_coco_instances("ribbon_train", {}, "C:/python123/r_cnn_ribbon/ribbon/train/train_json", "C:/python123/r_cnn_ribbon/ribbon/train/train_img")
+register_coco_instances("ribbon_val", {}, "C:/python123/r_cnn_ribbon/ribbon/val/val_json", "C:/python123/r_cnn_ribbon/ribbon/val/val_img")
 
 # Load the pre-trained model
 cfg = get_cfg()
-cfg.merge_from_file("path/to/detectron2/configs/COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
+cfg.merge_from_file("C:/python123/r_cnn_ribbon/faster_rcnn_R_50_FPN_3x.yaml")
 
 # Dataset settings
 cfg.DATASETS.TRAIN = ("ribbon_train",)
@@ -35,7 +35,7 @@ cfg.SOLVER.BASE_LR = 0.00025
 cfg.SOLVER.MAX_ITER = 5000
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1  # Only one class: ribbon
-cfg.OUTPUT_DIR = "path/to/save/model"
+cfg.OUTPUT_DIR = "C:/python123/r_cnn_ribbon"
 
 # Train the model
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
