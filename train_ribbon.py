@@ -7,6 +7,7 @@ from detectron2.config import get_cfg
 from detectron2.data import DatasetCatalog, MetadataCatalog
 from detectron2.data.datasets import register_coco_instances
 from detectron2.engine import DefaultTrainer
+from detectron2.evaluation import COCOEvaluator, inference_on_dataset
 from detectron2.utils.visualizer import Visualizer
 from detectron2.utils.logger import setup_logger
 
@@ -41,6 +42,11 @@ os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 trainer = DefaultTrainer(cfg)
 trainer.resume_or_load(resume=False)
 trainer.train()
+
+# Evaluate the model on the validation dataset
+evaluator = COCOEvaluator("ribbon_val", cfg, False, output_dir=cfg.OUTPUT_DIR)
+val_loader = trainer.data_loader.build_test_loader(cfg, "ribbon_val")
+inference_on_dataset(trainer.model, val_loader, evaluator)
 
 # Save the trained model as Ribbon.pth
 trained_model_path = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
