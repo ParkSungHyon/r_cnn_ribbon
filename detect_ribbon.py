@@ -12,7 +12,7 @@ from detectron2.engine import DefaultPredictor
 # Load the trained R-CNN model
 cfg = get_cfg()
 cfg.merge_from_file("Ribbon_R-CNN_config.yaml")  # Set the path to your R-CNN config file
-cfg.MODEL.WEIGHTS = "Ribbon.h5"  # Set the path to your trained R-CNN model
+cfg.MODEL.WEIGHTS = "Ribbon.pth"  # Set the path to your trained R-CNN model
 cfg.MODEL.DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 predictor = DefaultPredictor(cfg)
