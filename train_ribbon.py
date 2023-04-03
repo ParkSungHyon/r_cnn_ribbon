@@ -14,8 +14,29 @@ from detectron2.utils.logger import setup_logger
 setup_logger()
 
 # Register the dataset
-register_coco_instances("ribbon_train", {}, "C:/python123/r_cnn_ribbon/ribbon/train/train_json", "C:/python123/r_cnn_ribbon/ribbon/train/train_img")
-register_coco_instances("ribbon_val", {}, "C:/python123/r_cnn_ribbon/ribbon/val/val_json", "C:/python123/r_cnn_ribbon/ribbon/val/val_img")
+import os
+from detectron2.data.datasets import register_coco_instances
+
+# 경로 설정
+train_json_path = "C:/python123/r_cnn_ribbon/ribbon/train/train_json"
+train_img_path = "C:/python123/r_cnn_ribbon/ribbon/train/train_img"
+val_json_path = "C:/python123/r_cnn_ribbon/ribbon/val/val_json"
+val_img_path = "C:/python123/r_cnn_ribbon/ribbon/val/val_img"
+
+# train_json_path 폴더에서 모든 .json 파일 검색
+train_json_files = [f for f in os.listdir(train_json_path) if f.endswith('.json')]
+val_json_files = [f for f in os.listdir(val_json_path) if f.endswith('.json')]
+
+
+# 각각의 JSON 파일마다 데이터셋 등록
+for train_json_file in train_json_files:
+    train_dataset_name = os.path.splitext(train_json_file)[0]
+    register_coco_instances(train_dataset_name, {}, os.path.join(train_json_path, train_json_file + ".json"), train_img_path)
+
+for val_json_file in val_json_files:
+    val_dataset_name = os.path.splitext(val_json_file)[0]
+    register_coco_instances(val_dataset_name, {}, os.path.join(val_json_path, val_json_file + ".json"), val_img_path)
+##################### 여기까지
 
 # Load the pre-trained model
 cfg = get_cfg()
