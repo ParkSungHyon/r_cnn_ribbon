@@ -1,4 +1,5 @@
 import os
+import json
 import random
 import shutil
 import numpy as np
@@ -13,29 +14,80 @@ from detectron2.utils.logger import setup_logger
 
 setup_logger()
 
-# Register the dataset
-register_coco_instances("ribbon_train", {}, "C:/python123/r_cnn_ribbon/ribbon/train/train_json", "C:/python123/r_cnn_ribbon/ribbon/train/train_img")
-register_coco_instances("ribbon_val", {}, "C:/python123/r_cnn_ribbon/ribbon/val/val_json", "C:/python123/r_cnn_ribbon/ribbon/val/val_img")
+def merge_coco_annotations(json_files):
+    merged_data = {
+        "images": [],
+        "annotations": [],
+        "categories": []
+    }
+    annotation_id = 1
 
-# Load the pre-trained model
+    for file in json_files:
+        with open(file, "r") as f:
+            data = json.load(f)
+
+        if not merged_data["categories"]:
+            merged_data["categories"] = data["categories"]
+
+        for image in data["images"]:
+            image_id = image["id"]
+            merged_data["images"].append(image)
+
+            for annotation in data["annotations"]:
+                if annotation["image_id"] == image_id:
+                    annotation["id"] = annotation_id
+                    annotation_id += 1
+                    merged_data["annotations"].append(annotation)
+
+    return merged_data
+
+train_json_dir = "/Users/b31/Documents/ribbon/train/train_json"
+train_img_dir = "/Users/b31/Documents/ribbon/train/train_img"
+val_json_dir = "/Users/b31/Documents/ribbon/val/val_json"
+val_img_dir = "/Users/b31/Documents/ribbon/val/val_img"
+
+train_json_files = []
+for filename in os.listdir(train_json_dir):
+    if filename.endswith(".json"):
+        train_json_files.append(os.path.join(train_json_dir, filename))
+
+val_json_files = []
+for filename in os.listdir(val_json_dir):
+    if filename.endswith(".json"):
+        val_json_files.append(os.path.join(val_json_dir, filename))
+
+# Merge the annotations for the train dataset
+merged_train_data = merge_coco_annotations(train_json_files)
+merged_train_file = os.path.join(train_json_dir, "merged_train_annotations.json")
+with open(merged_train_file, "w") as f:
+    json.dump(merged_train_data, f)
+
+# Merge the annotations for the validation dataset
+merged_val_data = merge_coco_annotations(val_json_files)
+merged_val_file = os.path.join(val_json_dir, "merged_val_annotations.json")
+with open(merged_val_file, "w") as f:
+    json.dump(merged_val_data, f)
+
+register_coco_instances("ribbon_train", {}, merged_train_file, train_img_dir)
+register_coco_instances("ribbon_val", {}, merged_val_file, val_img_dir)
+
 cfg = get_cfg()
-cfg.merge_from_file("C:/python123/r_cnn_ribbon/faster_rcnn_R_50_FPN_3x.yaml")
+cfg.merge_from_file("/Users/b31/Documents/r_cnn_ribbon2/faster_rcnn_R_50_FPN_3x.yaml")
+cfg.merge_from_file("/Users/b31/Documents/r_cnn_ribbon2/Base-RCNN-FPN.yaml")
 
-# Dataset settings
 cfg.DATASETS.TRAIN = ("ribbon_train",)
 cfg.DATASETS.VAL = ("ribbon_val",)
 cfg.DATASETS.TEST = ()
 
-# Dataloader settings
 cfg.DATALOADER.NUM_WORKERS = 2
 
-# Trainer settings
 cfg.SOLVER.IMS_PER_BATCH = 2
 cfg.SOLVER.BASE_LR = 0.00025
 cfg.SOLVER.MAX_ITER = 5000
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128
-cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1  # Only one class: ribbon
-cfg.OUTPUT_DIR = "C:/python123/r_cnn_ribbon"
+cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1  # Only one
+lass: ribbon
+cfg.OUTPUT_DIR = "/Users/b31/Documents/r_cnn_ribbon2"
 
 # Train the model
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
