@@ -30,21 +30,20 @@ val_json_files = [f for f in os.listdir(val_json_path) if f.endswith('.json')]
 
 # 각각의 JSON 파일마다 데이터셋 등록
 for train_json_file in train_json_files:
-    train_dataset_name = os.path.splitext(train_json_file)[0]
-    register_coco_instances(train_dataset_name, {}, os.path.join(train_json_path, train_json_file + ".json"), train_img_path)
+        train_dataset_name = os.path.splitext(train_json_file)[0]
+        register_coco_instances(train_dataset_name, {}, os.path.join(train_json_path, train_json_file + ".json"), train_img_path)
 
 for val_json_file in val_json_files:
     val_dataset_name = os.path.splitext(val_json_file)[0]
     register_coco_instances(val_dataset_name, {}, os.path.join(val_json_path, val_json_file + ".json"), val_img_path)
-##################### 여기까지
 
 # Load the pre-trained model
 cfg = get_cfg()
 cfg.merge_from_file("C:/python123/r_cnn_ribbon/faster_rcnn_R_50_FPN_3x.yaml")
 
 # Dataset settings
-cfg.DATASETS.TRAIN = ("ribbon_train",)
-cfg.DATASETS.VAL = ("ribbon_val",)
+cfg.DATASETS.TRAIN = (train_dataset_name,)
+cfg.DATASETS.VAL = (val_dataset_name,)
 cfg.DATASETS.TEST = ()
 
 # Dataloader settings
@@ -56,7 +55,7 @@ cfg.SOLVER.BASE_LR = 0.00025
 cfg.SOLVER.MAX_ITER = 5000
 cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 1  # Only one class: ribbon
-cfg.OUTPUT_DIR = "C:/python123/r_cnn_ribbon"
+cfg.OUTPUT_DIR = "C:/python123/r_cnn_ribbon2"
 
 # Train the model
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
